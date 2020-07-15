@@ -11,6 +11,8 @@ const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 480.0;
 const PADDLE_SPEED: f32 = 8.0;
 const BALL_SPEED: f32 = 5.0;
+const PADDLE_SPIN: f32 = 4.0;
+const BALL_ACC: f32 = 0.05;
 
 struct GameState {
     /* GameState is a struct implementing Tetra's State trait.
@@ -99,8 +101,17 @@ impl State for GameState {
                 None
             };
 
-        if paddle_hit.is_some() {
-            self.ball.velocity.x = -self.ball.velocity.x;
+        // Add a bit of "spin" based offset from the struck paddle's centre. 
+        if let Some(paddle) = paddle_hit {
+            self.ball.velocity.x = -(self.ball.velocity.x + (BALL_ACC * self.ball.velocity.x.signum()));
+        
+            let offset = (paddle.centre().y - self.ball.centre().y) / paddle.height();
+
+            self.ball.velocity.y += PADDLE_SPIN * -offset;
+        }
+
+        if self.ball.position.y <= 0.0 || self.ball.position.y + self.ball.height() >= WINDOW_HEIGHT {
+            self.ball.velocity.y = -self.ball.velocity.y;
         }
 
         Ok(())

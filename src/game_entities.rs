@@ -41,5 +41,12 @@ pub mod entity {
                 self.height(),
             )
         }
+
+        pub fn centre(&self) -> Vec2<f32> {
+            Vec2::new(
+                self.position.x + (self.width() / 2.0),
+                self.position.y + (self.height() / 2.0),
+            )
+        }
     }
 }
