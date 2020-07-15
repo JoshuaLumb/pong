@@ -1,35 +1,16 @@
+mod game_entities;
+
 use tetra::graphics::{self, Color, Rectangle, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
+use game_entities::entity::{Entity};
 
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 480.0;
 const PADDLE_SPEED: f32 = 8.0;
 const BALL_SPEED: f32 = 5.0;
-
-struct Entity {
-    // An entity here will be any stateful object in the game
-    texture: Texture,
-    position: Vec2<f32>,
-    velocity: Vec2<f32>,
-}
-
-impl Entity {
-    // Entities will have a texture and a position on the map
-    fn new(texture: Texture, position: Vec2<f32>) -> Entity {
-        Entity::with_velocity(texture, position, Vec2::zero())
-    }
-
-    fn with_velocity(texture: Texture, position: Vec2<f32>, velocity: Vec2<f32>) -> Entity {
-        Entity {
-            texture,
-            position,
-            velocity,
-        }
-    }
-}
 
 struct GameState {
     /* GameState is a struct implementing Tetra's State trait.
@@ -102,6 +83,25 @@ impl State for GameState {
 
         // Handle ball position
         self.ball.position += self.ball.velocity;
+
+        // Handle collisions
+        let player1_bounds = self.player1.bounds();
+        let player2_bounds = self.player2.bounds();
+        let ball_bounds = self.ball.bounds();
+
+        // Tetra has a built in "intersects" method for collision detection
+        let paddle_hit = 
+            if ball_bounds.intersects(&player1_bounds) {
+                Some(&self.player1)
+            } else if ball_bounds.intersects(&player2_bounds) {
+                Some(&self.player2)
+            } else{
+                None
+            };
+
+        if paddle_hit.is_some() {
+            self.ball.velocity.x = -self.ball.velocity.x;
+        }
 
         Ok(())
     }
